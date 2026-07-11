@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { FaRegUser } from "react-icons/fa";
+import { FiMenu, FiX } from "react-icons/fi";
 import { GiBookshelf } from "react-icons/gi";
 import { IoCartOutline } from "react-icons/io5";
 
@@ -12,6 +14,9 @@ interface NavLink {
 
 const Navbar = () => {
   const pathname = usePathname();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   const navLinks: NavLink[] = [
     { name: "Home", href: "/" },
@@ -80,8 +85,40 @@ const Navbar = () => {
               );
             })}
           </div>
+          {/* mobail hambar  */}
+          <div className="md:hidden flex items-center">
+            <button onClick={toggleMenu}>
+              {isOpen ? (
+                <FiX className="text-2xl" />
+              ) : (
+                <FiMenu className="text-2xl" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
+      {/* mobail menu  */}
+      {isOpen && (
+        <div className="md:hidden flex flex-col items-center gap-6 capitalize tracking-wider absolute left-0 w-full shadow-md ">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={toggleMenu}
+                className={`text-sm font-semibold p-2 transition-colors duration-300 ease-in-out ${
+                  isActive
+                    ? "text-amber-600 font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </nav>
   );
 };
