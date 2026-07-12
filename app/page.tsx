@@ -1,7 +1,9 @@
+import Hero from "./components/Banner";
+
 export default function Home() {
   return (
     <div>
-      <h1>hello bangladesh</h1>
+      <Hero />
     </div>
   );
 }
