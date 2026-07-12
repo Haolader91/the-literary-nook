@@ -2,14 +2,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser, FaSignOutAlt } from "react-icons/fa";
 import { FiMenu, FiX } from "react-icons/fi";
 import { GiBookshelf } from "react-icons/gi";
 import { IoCartOutline } from "react-icons/io5";
+import { signOut, useSession } from "../lib/auth-client";
 
 interface NavLink {
   name: string;
   href: string;
+}
+interface ExtendedUser {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  role?: "user" | "admin";
 }
 
 const Navbar = () => {
@@ -18,34 +29,86 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const navLinks: NavLink[] = [
+  const { data: session, isPending } = useSession();
+  const isLoggedIn = !!session;
+  const user = session?.user as ExtendedUser | undefined;
+
+  const publicLinks: NavLink[] = [
     { name: "Home", href: "/" },
-    { name: "Bestsellers", href: "/bestsellers" },
     { name: "Genres", href: "/genres" },
-    { name: "New Release", href: "/new-release" },
-    { name: "Fiction", href: "/fiction" },
-    { name: "Non-Fiction", href: "/nonfiction" },
     { name: "Sale", href: "/sale" },
   ];
 
+  const privateLinks: NavLink[] = [
+    { name: "Home", href: "/" },
+    { name: "Genres", href: "/genres" },
+    ...(user?.role === "admin"
+      ? [
+          { name: "Add Book", href: "/items/add" },
+          { name: "Manage Books", href: "/items/manage" },
+        ]
+      : []),
+    { name: "Sale", href: "/sale" },
+  ];
+
+  const navLinks = isLoggedIn ? privateLinks : publicLinks;
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.reload();
+  };
+
   return (
-    <nav className="sticky top-0 z-50 w-full bg-[#f5f3e6] border-b border-slate-100 bg-opacity-95 shadow-sm">
-      <div className="max-w-7xl mx-auto p-2 h-auto flex flex-col">
-        {/* search  */}
-        <div className="flex items-center justify-between w-full">
-          <div className="hidden md:block w-48"></div>
+    <nav className="sticky top-0 z-50 w-full bg-[#f5f3e6] border-b border-stone-200 bg-opacity-95 shadow-sm backdrop-blur-sm">
+      <div className="max-w-7xl mx-auto p-3 h-auto flex flex-col gap-3">
+        <div className="flex items-center justify-between w-full gap-4">
+          <div className="hidden md:block w-32"></div>
+
           <div className="flex-1 max-w-xl mx-auto relative">
             <input
               type="text"
               placeholder="Search for books, authors, genres..."
-              className="w-full bg-[#eadeca] border border-stone-300/60 rounded-lg px-4 py-2 text-sm text-stone-800 placeholder-stone-500 focus:outline-none focus:border-stone-400"
+              className="w-full bg-[#eadeca]/70 border border-stone-300/60 rounded-lg px-4 py-2 text-sm text-stone-800 placeholder-stone-500 focus:outline-none focus:border-stone-400 focus:bg-white transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-4 text-stone-700 w-48 justify-end">
-            <button className="hover:text-stone-900 transition-colors">
-              <FaRegUser size={20} />
-            </button>
+          <div className="flex items-center gap-4 text-stone-700 w-auto md:w-64 justify-end">
+            {!isPending && (
+              <>
+                {!isLoggedIn ? (
+                  <>
+                    <Link
+                      href="/login"
+                      className="hover:text-stone-900 font-semibold text-sm transition-colors"
+                      title="Login"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/signUp"
+                      className="hidden md:flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-300 bg-white hover:bg-[#2EC458] hover:border-[#2EC458] hover:text-white font-semibold text-xs uppercase tracking-wider transition-all"
+                    >
+                      <FaRegUser size={14} />
+                      Become A Seller
+                    </Link>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-stone-700 max-w-25 truncate">
+                      Hi, {user?.name}
+                    </span>
+                    <button
+                      onClick={handleLogout}
+                      className="hover:text-red-600 transition-colors"
+                      title="Logout"
+                    >
+                      <FaSignOutAlt size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
             <button className="hover:text-stone-900 transition-colors relative p-1">
               <IoCartOutline size={24} />
               <span className="absolute top-0 right-0 w-4 h-4 bg-emerald-600 text-[10px] font-bold text-white rounded-full flex items-center justify-center">
@@ -55,39 +118,41 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="flex justify-between">
-          {/* logo  */}
-          <Link href="/">
-            <div className=" flex items-center justify-center">
-              <GiBookshelf className=" font-bold" size={30} />
+        <div className="flex justify-between items-center border-t border-stone-200/40 pt-2">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center text-stone-800">
+              <GiBookshelf size={30} />
             </div>
-            <span className="uppercase font-bold tracking-wider text-black">
+            <span className="uppercase font-extrabold tracking-wider text-stone-900 text-sm md:text-base">
               The literary Nook
             </span>
           </Link>
 
-          {/* menu  */}
-          <div className="hidden md:flex items-center gap-6 capitalize tracking-wider ">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-semibold p-2 transition-colors duration-300 ease-in-out ${
-                    isActive
-                      ? "text-black border-b-2 border-amber-400"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
+          <div className="hidden md:flex items-center gap-6 capitalize tracking-wider">
+            {!isPending &&
+              navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-semibold p-2 transition-colors duration-300 ease-in-out ${
+                      isActive
+                        ? "text-black border-b-2 border-amber-400 font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
           </div>
-          {/* mobail hambar  */}
+
           <div className="md:hidden flex items-center">
-            <button onClick={toggleMenu}>
+            <button
+              onClick={toggleMenu}
+              className="text-stone-800 focus:outline-none"
+            >
               {isOpen ? (
                 <FiX className="text-2xl" />
               ) : (
@@ -99,24 +164,35 @@ const Navbar = () => {
       </div>
       {/* mobail menu  */}
       {isOpen && (
-        <div className="md:hidden flex flex-col items-center gap-6 capitalize tracking-wider absolute left-0 w-full shadow-md ">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={toggleMenu}
-                className={`text-sm font-semibold p-2 transition-colors duration-300 ease-in-out ${
-                  isActive
-                    ? "text-amber-600 font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                {link.name}
-              </Link>
-            );
-          })}
+        <div className="md:hidden flex flex-col items-center gap-4 capitalize tracking-wider absolute left-0 w-full bg-[#f5f3e6] py-6 shadow-md border-t border-stone-200/60 z-50">
+          {!isPending &&
+            navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={toggleMenu}
+                  className={`text-sm font-semibold p-2 w-11/12 text-center rounded-md transition-colors ${
+                    isActive
+                      ? "text-amber-700 bg-amber-500/10 font-bold"
+                      : "text-slate-600 hover:bg-stone-200/50"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+
+          {!isLoggedIn && !isPending && (
+            <Link
+              href="/signup"
+              onClick={toggleMenu}
+              className="mt-2 w-11/12 text-center py-2 bg-[#2EC458] text-white font-bold rounded-lg text-sm uppercase tracking-wide shadow-sm"
+            >
+              Become A Seller
+            </Link>
+          )}
         </div>
       )}
     </nav>
