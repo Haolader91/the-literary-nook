@@ -43,7 +43,12 @@ const AddBookPage = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      const result = await addedBook(formData);
+      const finalBookData = {
+        ...formData,
+        userEmail: session?.user?.email,
+      };
+
+      const result = await addedBook(finalBookData);
 
       if (result.insertedId) {
         setMessage({
