@@ -88,12 +88,6 @@ const ManageItemsPage = () => {
           </button>
         </div>
 
-        {notification && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-wider text-center rounded-xl animate-fade-in">
-            {notification}
-          </div>
-        )}
-
         {books.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-stone-200 rounded-xl">
             <p className="text-stone-400 font-medium text-sm">

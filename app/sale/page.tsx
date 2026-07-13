@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { IoCartOutline } from "react-icons/io5";
 import { FiSliders, FiX, FiEye } from "react-icons/fi";
 import { getAllBooks } from "../lib/getpost/books";
+import Link from "next/link";
+import AddToCartButton from "../components/AddToCartButton";
 
 interface Book {
   _id: string;
@@ -24,7 +25,7 @@ const SalePage = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
-  const [maxPrice, setMaxPrice] = useState(200);
+  const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState("default");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
@@ -145,7 +146,7 @@ const SalePage = () => {
               <input
                 type="range"
                 min="10"
-                max="200"
+                max="1000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-[#2ec458] cursor-pointer"
@@ -204,9 +205,7 @@ const SalePage = () => {
                       />
 
                       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
-                        <button className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-4 py-2.5 bg-[#2ec458] text-white rounded-xl hover:bg-[#27b04e] active:scale-95 transition-all shadow-lg transform translate-y-2 group-hover:translate-y-0 duration-300">
-                          <IoCartOutline size={16} /> Add to Cart
-                        </button>
+                        <AddToCartButton book={book} />
                       </div>
                     </div>
 
@@ -246,9 +245,11 @@ const SalePage = () => {
                         </span>
                       </div>
 
-                      <button className="w-full flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider py-2 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-xl transition-colors">
-                        <FiEye size={14} /> View Details
-                      </button>
+                      <Link href={`/sale/${book._id}`} className="w-full">
+                        <button className="w-full flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider py-2 bg-stone-50 text-stone-700 hover:bg-stone-100 rounded-xl border border-stone-200/60 transition-colors">
+                          <FiEye size={14} /> View Details
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 ))}

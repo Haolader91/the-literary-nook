@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaRegUser, FaSignOutAlt } from "react-icons/fa";
 import { FiMenu, FiX } from "react-icons/fi";
 import { GiBookshelf } from "react-icons/gi";
 import { IoCartOutline } from "react-icons/io5";
 import { signOut, useSession } from "../lib/auth-client";
+import { getCartFromDB } from "../lib/actions/books";
 
 interface NavLink {
   name: string;
@@ -28,10 +29,33 @@ const Navbar = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => setIsOpen(!isOpen);
+  const [cartCount, setCartCount] = useState(0);
 
   const { data: session, isPending } = useSession();
   const isLoggedIn = !!session;
   const user = session?.user as ExtendedUser | undefined;
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const cartItems = await getCartFromDB();
+
+        const totalItems = cartItems.reduce(
+          (acc: number, item: any) => acc + item.quantity,
+          0,
+        );
+        setCartCount(totalItems);
+      } catch (error) {
+        console.error("Failed to fetch cart count:", error);
+      }
+    };
+
+    fetchCartCount();
+
+    const interval = setInterval(fetchCartCount, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const publicLinks: NavLink[] = [
     { name: "Home", href: "/" },
@@ -109,12 +133,18 @@ const Navbar = () => {
               </>
             )}
 
-            <button className="hover:text-stone-900 transition-colors relative p-1">
+            <Link
+              href="/cart"
+              className="hover:text-stone-900 transition-colors relative p-1 block"
+            >
               <IoCartOutline size={24} />
-              <span className="absolute top-0 right-0 w-4 h-4 bg-emerald-600 text-[10px] font-bold text-white rounded-full flex items-center justify-center">
-                2
-              </span>
-            </button>
+
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-emerald-600 text-[10px] font-bold text-white rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
 
@@ -123,8 +153,8 @@ const Navbar = () => {
             <div className="flex items-center justify-center text-stone-800">
               <GiBookshelf size={30} />
             </div>
-            <span className="uppercase font-extrabold tracking-wider text-stone-900 text-sm md:text-base">
-              The literary Nook
+            <span className="uppercase font-black tracking-wider text-stone-900 text-xl md:text-base">
+              The Literary <span className="text-[#2ec458]">Nook</span>
             </span>
           </Link>
 

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { IoCartOutline, IoArrowBackOutline } from "react-icons/io5";
 import { FiHeart, FiShare2, FiCheckCircle } from "react-icons/fi";
 import { getAllBooks } from "@/app/lib/getpost/books";
+import AddToCartButton from "@/app/components/AddToCartButton";
 
 interface Book {
   _id: string;
@@ -175,9 +176,10 @@ const BookDetailsPage = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="flex-1 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider py-3.5 bg-[#2ec458] text-white hover:bg-[#27b04e] active:scale-98 transition-all rounded-xl shadow-lg shadow-emerald-600/10">
+              {/* <button className="flex-1 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider py-3.5 bg-[#2ec458] text-white hover:bg-[#27b04e] active:scale-98 transition-all rounded-xl shadow-lg shadow-emerald-600/10">
                 <IoCartOutline size={20} /> Add to Shopping Cart
-              </button>
+              </button> */}
+              <AddToCartButton book={book} buttonText="Add to Shopping Cart" />
 
               <div className="flex gap-2">
                 <button
