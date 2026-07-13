@@ -5,8 +5,15 @@ import Link from "next/link";
 import { FiArrowRight, FiChevronDown } from "react-icons/fi";
 import Image from "next/image";
 
+interface SlideItem {
+  id: number;
+  title: string;
+  subtitle: string;
+  image: string;
+}
+
 const Hero = () => {
-  const slides = [
+  const slides: SlideItem[] = [
     {
       id: 1,
       title: "Discover Your Next Great Read",
@@ -25,7 +32,7 @@ const Hero = () => {
     },
   ];
 
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
