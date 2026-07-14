@@ -9,6 +9,16 @@ export const getAllBooks = async () => {
   }
   return res.json();
 };
+// genres page
+export const getDynamicGenresFromBooks = async () => {
+  const res = await fetch(`${baseUrl}/api/genres`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch genres");
+  }
+  return res.json();
+};
 
 //  genres slug
 export const getGenreCounts = async () => {
