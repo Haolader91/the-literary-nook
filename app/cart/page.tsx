@@ -17,6 +17,9 @@ import {
   removeFromCartDB,
 } from "../lib/actions/books";
 
+// 🔄 আপনার তৈরি করা কাস্টম ডিলিট মডালটি ইমপোর্ট করুন (পাথ ঠিক আছে কিনা দেখে নেবেন)
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+
 interface CartItem {
   _id: string;
   bookId: string;
@@ -32,6 +35,11 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  // 🛠️ মডাল কন্ট্রোল করার জন্য নতুন স্টেট (অ্যাড করা হয়েছে)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const loadCartData = () => {
     getCartFromDB()
@@ -49,37 +57,83 @@ const CartPage = () => {
     loadCartData();
   }, []);
 
+  // ➕ প্লাস বাটন লজিক (এডিট করা হয়েছে)
   const increaseQty = async (item: CartItem) => {
-    await addToCartDB({
-      bookId: item.bookId,
-      title: item.title,
-      genre: item.genre,
-      price: item.price,
-      imageUrl: item.imageUrl,
-      quantity: 1,
-    });
-    loadCartData();
-  };
+    // ⚡ লোকাল স্টেট সাথে সাথে আপডেট (Optimistic Update - নেভবার বা রাউট পুশ ইফেক্ট হবে না)
+    setCartItems((prev) =>
+      prev.map((i) =>
+        i.bookId === item.bookId ? { ...i, quantity: i.quantity + 1 } : i,
+      ),
+    );
 
-  const decreaseQty = async (item: CartItem) => {
-    if (item.quantity <= 1) {
-      await removeItem(item.bookId);
-    } else {
+    try {
       await addToCartDB({
         bookId: item.bookId,
         title: item.title,
         genre: item.genre,
         price: item.price,
         imageUrl: item.imageUrl,
-        quantity: -1,
+        quantity: 1, // ডাটাবেজে ১ প্লাস হবে
       });
+    } catch (err) {
+      console.error(err);
+      loadCartData(); // ফেইল করলে ডাটাবেজ থেকে রিয়েল ডাটা সিঙ্ক করবে
+    }
+  };
+
+  // ➖ মাইনাস বাটন লজিক (এডিট করা হয়েছে - ১ এর নিচে নামবে না)
+  const decreaseQty = async (item: CartItem) => {
+    // 🔒 কোয়ান্টিটি ১ বা তার কম হলে এখানেই আটকে দেবে, কোনো অ্যাকশন ফায়ার হবে না
+    if (item.quantity <= 1) return;
+
+    // ⚡ লোকাল স্টেট সাথে সাথে মাইনাস করুন
+    setCartItems((prev) =>
+      prev.map((i) =>
+        i.bookId === item.bookId ? { ...i, quantity: i.quantity - 1 } : i,
+      ),
+    );
+
+    try {
+      await addToCartDB({
+        bookId: item.bookId,
+        title: item.title,
+        genre: item.genre,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        quantity: -1, // ডাটাবেজে ১ মাইনাস হবে
+      });
+    } catch (err) {
+      console.error(err);
       loadCartData();
     }
   };
 
-  const removeItem = async (bookId: string) => {
-    await removeFromCartDB(bookId);
-    loadCartData();
+  // 🗑️ ট্র্যাশ আইকনে ক্লিক করলে মডাল ওপেন হবে (এডিট করা হয়েছে)
+  const openDeleteModal = (bookId: string) => {
+    setSelectedBookId(bookId);
+    setIsModalOpen(true);
+  };
+
+  // 🧼 মডাল থেকে কনফার্ম করলে ডিলিট এক্সিকিউট হবে (নতুন ফাংশন)
+  const handleConfirmDelete = async () => {
+    if (!selectedBookId) return;
+
+    try {
+      setModalLoading(true);
+      await removeFromCartDB(selectedBookId);
+
+      // স্টেট থেকে আইটেমটি বাদ দিয়ে দিন
+      setCartItems((prev) =>
+        prev.filter((item) => item.bookId !== selectedBookId),
+      );
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Something went wrong while removing the item.");
+    } finally {
+      setModalLoading(false);
+      setSelectedBookId(null);
+    }
   };
 
   const handleCheckout = async () => {
@@ -183,9 +237,11 @@ const CartPage = () => {
 
                   <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="flex items-center border border-stone-200 rounded-lg bg-stone-50 overflow-hidden">
+                      {/* 🔒 মাইনাস বাটন ১ এ লক করার কন্ডিশনাল ডিজাইন */}
                       <button
                         onClick={() => decreaseQty(item)}
-                        className="p-2 hover:bg-stone-100 text-stone-600 transition-colors"
+                        disabled={item.quantity <= 1}
+                        className={`p-2 hover:bg-stone-100 text-stone-600 transition-colors ${item.quantity <= 1 ? "opacity-30 cursor-not-allowed" : ""}`}
                       >
                         <FiMinus size={12} />
                       </button>
@@ -201,7 +257,7 @@ const CartPage = () => {
                     </div>
 
                     <button
-                      onClick={() => removeItem(item.bookId)}
+                      onClick={() => openDeleteModal(item.bookId)} // 👈 সরাসরি রিমুভ না হয়ে মডাল ট্রিগার করবে
                       className="p-2 text-stone-400 hover:text-rose-500 rounded-lg transition-colors"
                       title="Remove item"
                     >
@@ -248,6 +304,16 @@ const CartPage = () => {
           </div>
         )}
       </div>
+
+      {/* 🔮 কাস্টম রিইউজেবল ডিলিট কনফার্মেশন মডাল কম্পোনেন্ট (অ্যাড করা হয়েছে) */}
+      <DeleteConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Remove From Cart"
+        message="Are you sure you want to remove this book from your shopping cart?"
+        isLoading={modalLoading}
+      />
     </div>
   );
 };

@@ -40,10 +40,7 @@ const Navbar = () => {
       try {
         const cartItems = await getCartFromDB();
 
-        const totalItems = cartItems.reduce(
-          (acc: number, item: any) => acc + item.quantity,
-          0,
-        );
+        const totalItems = cartItems.reduce.length;
         setCartCount(totalItems);
       } catch (error) {
         console.error("Failed to fetch cart count:", error);
