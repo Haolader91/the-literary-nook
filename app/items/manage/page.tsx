@@ -6,6 +6,8 @@ import { useSession } from "../../lib/auth-client";
 import { GiBookshelf } from "react-icons/gi";
 import { FiEye, FiTrash2 } from "react-icons/fi";
 import { getAllBooks } from "@/app/lib/getpost/books";
+import { removeFromCartDB } from "@/app/lib/actions/books";
+import DeleteConfirmModal from "@/app/components/DeleteConfirmModal";
 
 interface BookItem {
   _id: string;
@@ -22,6 +24,10 @@ const ManageItemsPage = () => {
 
   const [books, setBooks] = useState<BookItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -31,13 +37,11 @@ const ManageItemsPage = () => {
 
   useEffect(() => {
     if (session?.user?.email) {
-      // setLoadingData(true);
       getAllBooks()
         .then((data: BookItem[]) => {
           const myBooks = data.filter(
             (book) => book.userEmail === session.user.email,
           );
-
           setBooks(myBooks);
           setLoadingData(false);
         })
@@ -47,6 +51,37 @@ const ManageItemsPage = () => {
         });
     }
   }, [session]);
+
+  const openDeleteModal = (bookId: string) => {
+    setSelectedBookId(bookId);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedBookId) return;
+
+    try {
+      setDeletingId(selectedBookId);
+
+      await removeFromCartDB(selectedBookId);
+
+      setBooks((prevBooks) =>
+        prevBooks.filter((book) => book._id !== selectedBookId),
+      );
+
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to delete book:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setDeletingId(null);
+      setSelectedBookId(null);
+    }
+  };
+
+  const handleView = (bookId: string) => {
+    router.push(`/sale/${bookId}`);
+  };
 
   if (isPending || !session || loadingData) {
     return (
@@ -142,6 +177,7 @@ const ManageItemsPage = () => {
                     <td className="p-4 text-right">
                       <div className="inline-flex items-center gap-2">
                         <button
+                          onClick={() => handleView(book._id)}
                           className="p-2 text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/70 rounded-lg transition-colors"
                           title="View Details"
                         >
@@ -149,6 +185,7 @@ const ManageItemsPage = () => {
                         </button>
 
                         <button
+                          onClick={() => openDeleteModal(book._id)}
                           className="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/80 rounded-lg transition-colors"
                           title="Delete Book"
                         >
@@ -163,6 +200,15 @@ const ManageItemsPage = () => {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Book"
+        message="Are you sure you want to delete this book? This item will be permanently removed from your catalog."
+        isLoading={deletingId !== null}
+      />
     </div>
   );
 };
