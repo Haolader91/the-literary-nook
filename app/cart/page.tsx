@@ -12,6 +12,7 @@ import {
 import { FiMinus, FiPlus } from "react-icons/fi";
 import {
   addToCartDB,
+  createCheckoutSession,
   getCartFromDB,
   removeFromCartDB,
 } from "../lib/actions/books";
@@ -30,6 +31,7 @@ const CartPage = () => {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const loadCartData = () => {
     getCartFromDB()
@@ -78,6 +80,26 @@ const CartPage = () => {
   const removeItem = async (bookId: string) => {
     await removeFromCartDB(bookId);
     loadCartData();
+  };
+
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) return;
+
+    try {
+      setCheckoutLoading(true);
+      const res = await createCheckoutSession(cartItems, shipping);
+
+      if (res && res.url) {
+        router.push(res.url);
+      } else {
+        alert("Failed to create checkout session. Please try again.");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Something went wrong during checkout.");
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   const subtotal = cartItems.reduce(
@@ -213,8 +235,14 @@ const CartPage = () => {
                   </span>
                 </div>
               </div>
-              <button className="w-full flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider py-4 bg-[#2ec458] text-white hover:bg-[#27b04e] active:scale-98 transition-all rounded-xl shadow-lg shadow-emerald-600/10">
-                <IoBagCheckOutline size={18} /> Proceed to Checkout
+
+              <button
+                onClick={handleCheckout}
+                disabled={checkoutLoading}
+                className={`w-full flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider py-4 bg-[#2ec458] text-white hover:bg-[#27b04e] active:scale-98 transition-all rounded-xl shadow-lg shadow-emerald-600/10 ${checkoutLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <IoBagCheckOutline size={18} />
+                {checkoutLoading ? "Processing..." : "Proceed to Checkout"}
               </button>
             </div>
           </div>

@@ -58,3 +58,23 @@ export const removeFromCartDB = async (bookId: string) => {
   });
   return res.json();
 };
+
+// payment method
+export const createCheckoutSession = async (
+  cartItems: any[],
+  shippingFee: number,
+) => {
+  const res = await fetch(`${baseUrl}/api/create-checkout-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cartItems, shippingFee }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Checkout session creation failed");
+  }
+
+  return res.json();
+};
