@@ -9,3 +9,14 @@ export const getAllBooks = async () => {
   }
   return res.json();
 };
+
+//  genres slug
+export const getGenreCounts = async () => {
+  const res = await fetch(`${baseUrl}/api/genres-count`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch genre counts");
+  }
+  return res.json();
+};

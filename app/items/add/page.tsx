@@ -12,6 +12,7 @@ const AddBookPage = () => {
 
   const [formData, setFormData] = useState({
     title: "",
+    author: "", // 👈 Author স্টেট যুক্ত করা হয়েছে
     shortDescription: "",
     fullDescription: "",
     price: "",
@@ -58,6 +59,7 @@ const AddBookPage = () => {
 
         setFormData({
           title: "",
+          author: "", // 👈 রিসেট ফর্মেও যুক্ত করা হয়েছে
           shortDescription: "",
           fullDescription: "",
           price: "",
@@ -116,6 +118,7 @@ const AddBookPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Book Title */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
               Book Title
@@ -131,6 +134,23 @@ const AddBookPage = () => {
             />
           </div>
 
+          {/* ✍️ Author Input Option */}
+          <div className="space-y-1">
+            <label className="text-xs font-black uppercase tracking-wider text-stone-500">
+              Author Name
+            </label>
+            <input
+              type="text"
+              name="author"
+              required
+              value={formData.author}
+              onChange={handleChange}
+              placeholder="e.g., Matt Haig"
+              className="w-full bg-[#fdfdfb] border border-stone-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-stone-400 transition-all"
+            />
+          </div>
+
+          {/* Short Description */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
               Short Description
@@ -146,6 +166,7 @@ const AddBookPage = () => {
             />
           </div>
 
+          {/* Full Description */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
               Full Description
@@ -161,6 +182,7 @@ const AddBookPage = () => {
             />
           </div>
 
+          {/* Price & Genre */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-black uppercase tracking-wider text-stone-500">
@@ -198,6 +220,7 @@ const AddBookPage = () => {
             </div>
           </div>
 
+          {/* Image URL */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
               Image URL
@@ -213,6 +236,7 @@ const AddBookPage = () => {
             />
           </div>
 
+          {/* Submit Button */}
           <div className="pt-2">
             <button
               type="submit"
