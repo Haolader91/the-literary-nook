@@ -6,6 +6,7 @@ import { useSession } from "../../lib/auth-client";
 import { GiBookshelf } from "react-icons/gi";
 import { addedBook } from "@/app/lib/actions/books";
 import { toast } from "react-toastify";
+import { imageUpload } from "@/app/lib/imgUpload";
 
 const AddBookPage = () => {
   const { data: session, isPending } = useSession();
@@ -38,13 +39,28 @@ const AddBookPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
+    const form = e.currentTarget;
+    const imageFile = form.image.files?.[0];
+
+    if (!imageFile) {
+      toast.error("Please select a book cover image!");
+      setLoading(false);
+      return;
+    }
+
+    const toastId = toast.loading("Uploading image to ImgBB...");
+
     try {
+      const uploadedImageUrl = await imageUpload(imageFile);
+      toast.dismiss(toastId);
+
       const finalBookData = {
         ...formData,
+        imageUrl: uploadedImageUrl,
         userEmail: session?.user?.email,
       };
 
@@ -62,10 +78,12 @@ const AddBookPage = () => {
           genre: "Fiction",
           imageUrl: "",
         });
+        form.reset();
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast.dismiss(toastId);
       console.error(error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -98,8 +116,6 @@ const AddBookPage = () => {
             List a new literary masterpiece on the store
           </p>
         </div>
-
-        {/* 💡 এখান থেকে পুরনো কাস্টম অ্যালার্ট মেসেজের ডোম (DOM) ব্লকটি পুরোপুরি ডিলিট করে দিয়েছি, কারণ এখন টোস্ট দেখাবে */}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Book Title */}
@@ -207,16 +223,14 @@ const AddBookPage = () => {
           {/* Image URL */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
-              Image URL
-              <span className="text-stone-400 font-normal">(Optional)</span>
+              Book Cover Image
             </label>
             <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/book-cover.jpg"
-              className="w-full bg-[#fdfdfb] border border-stone-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-stone-400 transition-all"
+              type="file"
+              name="image"
+              accept="image/*"
+              required
+              className="w-full bg-[#fdfdfb] border border-stone-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-stone-400 transition-all file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:uppercase file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 file:cursor-pointer cursor-pointer"
             />
           </div>
 
