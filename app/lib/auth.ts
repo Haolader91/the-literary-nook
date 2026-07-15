@@ -18,7 +18,7 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "user",
-        input: true, // 🔥 এটি অবশ্যই যোগ করুন! এটি ছাড়া ফ্রন্টএন্ডের 'admin' ব্যাকএন্ডে ঢুকতে পারবে না।
+        input: true,
       },
     },
   },

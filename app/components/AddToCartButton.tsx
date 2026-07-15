@@ -4,6 +4,8 @@ import React from "react";
 import { IoCartOutline } from "react-icons/io5";
 import { addToCartDB } from "../lib/actions/books";
 import { toast } from "react-toastify";
+import { authClient } from "../lib/auth-client";
+import { useRouter, usePathname } from "next/navigation";
 
 interface AddToCartButtonProps {
   book: {
@@ -20,7 +22,18 @@ export default function AddToCartButton({
   book,
   buttonText = "Add to Cart",
 }: AddToCartButtonProps) {
+  const { data: session } = authClient.useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const handleAddToCart = async () => {
+    if (!session) {
+      toast.warn("Please login first to add items to cart!");
+
+      router.push(`/login?callbackUrl=${pathname}`);
+      return;
+    }
+
     try {
       await addToCartDB({
         bookId: book._id,
@@ -30,9 +43,10 @@ export default function AddToCartButton({
         imageUrl: book.imageUrl,
         quantity: 1,
       });
-      toast.success("added to cart page");
+      toast.success("Added to cart successfully!");
     } catch (err) {
       console.error("Error adding to cart:", err);
+      toast.error("Failed to add to cart.");
     }
   };
 
