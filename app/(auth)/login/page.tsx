@@ -48,6 +48,11 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  const handleSocialSingIn = async () => {
+    await signIn.social({
+      provider: "google",
+    });
+  };
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center bg-[#f5f3e6] px-4 py-12">
@@ -65,6 +70,7 @@ const LoginPage = () => {
             Facebook
           </button>
           <button
+            onClick={handleSocialSingIn}
             type="button"
             className="flex items-center justify-center gap-2 bg-[#ea4335] text-white py-2.5 px-4 rounded-md font-semibold text-sm hover:bg-[#d63b2f] transition-colors shadow-sm"
           >
