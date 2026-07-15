@@ -3,10 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDynamicGenresFromBooks } from "../lib/getpost/books";
-// 🔄 আপনার সার্ভার অ্যাকশন ফাইল থেকে ফাংশনটি ইমপোর্ট করুন
-// import { getDynamicGenresFromBooks } from "@/app/lib/actions/books";
 
-// ডাটাবেজের জেনারের নামের সাথে মিল রেখে ব্যাকগ্রাউন্ড ও কালার থিম ম্যাপ
 const STYLE_MAP: Record<string, { bgClass: string; slug: string }> = {
   Fiction: {
     slug: "fiction",
@@ -34,7 +31,6 @@ const STYLE_MAP: Record<string, { bgClass: string; slug: string }> = {
   },
 };
 
-// ডিফল্ট বা ব্যাকআপ স্টাইল (যদি ডাটাবেজে নতুন কোনো কাস্টম জেনার অ্যাড হয়)
 const DEFAULT_STYLE = {
   slug: "unknown-genre",
   bgClass: "bg-stone-50/80 border-stone-200 text-stone-900",

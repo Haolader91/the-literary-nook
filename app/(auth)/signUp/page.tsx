@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-// import { signUp } from "@/app/lib/auth-client";
 import { FiUser, FiShoppingBag } from "react-icons/fi";
 import { signUp } from "@/app/lib/auth-client";
 
@@ -50,10 +49,7 @@ const SignUpPage = () => {
         );
       } else {
         router.push("/");
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        router.refresh();
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -104,7 +100,6 @@ const SignUpPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* নাম ইনপুট */}
           <div className="relative border-b border-stone-300 py-1.5 focus-within:border-emerald-500 transition-colors">
             <input
               type="text"
@@ -172,7 +167,7 @@ const SignUpPage = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-stone-600">
-            Already have an account?{" "}
+            Already have an account?
             <Link
               href="/login"
               className="text-emerald-600 font-bold hover:underline transition-all"

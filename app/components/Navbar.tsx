@@ -219,7 +219,7 @@ const Navbar = () => {
 
           {!isLoggedIn && !isPending && (
             <Link
-              href="/signup"
+              href="/signUp"
               onClick={toggleMenu}
               className="mt-2 w-11/12 text-center py-2 bg-[#2EC458] text-white font-bold rounded-lg text-sm uppercase tracking-wide shadow-sm"
             >

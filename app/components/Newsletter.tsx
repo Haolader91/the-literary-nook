@@ -6,18 +6,15 @@ const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // ✉️ ফর্ম সাবমিট হ্যান্ডলার
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (email) {
-      // এখানে ভবিষ্যতে আপনার ব্যাকএন্ড API কল করতে পারবেন
       console.log("Subscribed email:", email);
 
       setIsSubmitted(true);
-      setEmail(""); // ইনপুট বক্স খালি করার জন্য
+      setEmail("");
 
-      // ৩ সেকেন্ড পর সাকসেস মেসেজটি চলে যাবে
       setTimeout(() => {
         setIsSubmitted(false);
       }, 4000);
@@ -61,7 +58,6 @@ const Newsletter = () => {
               </button>
             </form>
           ) : (
-            /* 🎉 সাবমিট করার পর সাকসেস মেসেজ */
             <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-bold animate-fade-in">
               Thank you! You have successfully subscribed to our newsletter.
             </div>
