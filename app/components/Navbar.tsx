@@ -37,11 +37,17 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchCartCount = async () => {
+      if (!isLoggedIn) {
+        setCartCount(0);
+        return;
+      }
+
       try {
         const cartItems = await getCartFromDB();
 
-        const totalItems = cartItems.reduce.length;
-        setCartCount(totalItems);
+        if (Array.isArray(cartItems)) {
+          setCartCount(cartItems.length);
+        }
       } catch (error) {
         console.error("Failed to fetch cart count:", error);
       }
@@ -52,7 +58,7 @@ const Navbar = () => {
     const interval = setInterval(fetchCartCount, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isLoggedIn]);
 
   const publicLinks: NavLink[] = [
     { name: "Home", href: "/" },
