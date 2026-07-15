@@ -29,6 +29,7 @@ export const addToCartDB = async (cartData: {
   price: string | number;
   imageUrl?: string;
   quantity: number;
+  userEmail: string;
 }) => {
   const res = await fetch(`${baseUrl}/api/carts`, {
     method: "POST",
@@ -41,10 +42,13 @@ export const addToCartDB = async (cartData: {
 };
 
 // ২. ডেটাবেজ থেকে কার্ট ডেটা আনার অ্যাকশন
-export const getCartFromDB = async () => {
-  const res = await fetch(`${baseUrl}/api/carts`, {
-    cache: "no-store",
-  });
+export const getCartFromDB = async (userEmail: string) => {
+  const res = await fetch(
+    `${baseUrl}/api/carts?email=${encodeURIComponent(userEmail)}`,
+    {
+      cache: "no-store",
+    },
+  );
   if (!res.ok) {
     throw new Error("Failed to fetch cart");
   }
@@ -52,10 +56,13 @@ export const getCartFromDB = async () => {
 };
 
 // ৩. ডেটাবেজ থেকে কার্ট আইটেম ডিলিট করার অ্যাকশন
-export const removeFromCartDB = async (bookId: string) => {
-  const res = await fetch(`${baseUrl}/api/carts/${bookId}`, {
-    method: "DELETE",
-  });
+export const removeFromCartDB = async (bookId: string, userEmail: string) => {
+  const res = await fetch(
+    `${baseUrl}/api/carts/${bookId}?email=${encodeURIComponent(userEmail)}`,
+    {
+      method: "DELETE",
+    },
+  );
   return res.json();
 };
 

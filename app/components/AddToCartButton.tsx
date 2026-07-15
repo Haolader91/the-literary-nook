@@ -27,7 +27,7 @@ export default function AddToCartButton({
   const pathname = usePathname();
 
   const handleAddToCart = async () => {
-    if (!session) {
+    if (!session || !session.user || !session.user.email) {
       toast.warn("Please login first to add items to cart!");
 
       router.push(`/login?callbackUrl=${pathname}`);
@@ -42,6 +42,7 @@ export default function AddToCartButton({
         price: book.price,
         imageUrl: book.imageUrl,
         quantity: 1,
+        userEmail: session.user.email,
       });
       toast.success("Added to cart successfully!");
     } catch (err) {

@@ -37,13 +37,13 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchCartCount = async () => {
-      if (!isLoggedIn) {
+      if (!isLoggedIn || !user?.email) {
         setCartCount(0);
         return;
       }
 
       try {
-        const cartItems = await getCartFromDB();
+        const cartItems = await getCartFromDB(user.email);
 
         if (Array.isArray(cartItems)) {
           setCartCount(cartItems.length);
@@ -58,7 +58,7 @@ const Navbar = () => {
     const interval = setInterval(fetchCartCount, 2000);
 
     return () => clearInterval(interval);
-  }, [isLoggedIn]);
+  }, [isLoggedIn, user?.email]);
 
   const publicLinks: NavLink[] = [
     { name: "Home", href: "/" },

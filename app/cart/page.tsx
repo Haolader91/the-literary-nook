@@ -9,13 +9,14 @@ import {
   IoArrowBackOutline,
   IoBagCheckOutline,
 } from "react-icons/io5";
-import { FiMinus, FiPlus } from "react-icons/fi";
+import { FiMinus as FiMinusIcon, FiPlus as FiPlusIcon } from "react-icons/fi";
 import {
   addToCartDB,
   createCheckoutSession,
   getCartFromDB,
   removeFromCartDB,
 } from "../lib/actions/books";
+import { authClient } from "../lib/auth-client";
 
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
 
@@ -31,6 +32,7 @@ interface CartItem {
 
 const CartPage = () => {
   const router = useRouter();
+  const { data: session, isPending: sessionLoading } = authClient.useSession();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -39,8 +41,8 @@ const CartPage = () => {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
 
-  const loadCartData = () => {
-    getCartFromDB()
+  const loadCartData = (email: string) => {
+    getCartFromDB(email)
       .then((data) => {
         setCartItems(data);
         setLoading(false);
@@ -52,10 +54,19 @@ const CartPage = () => {
   };
 
   useEffect(() => {
-    loadCartData();
-  }, []);
+    if (!sessionLoading) {
+      if (session?.user?.email) {
+        loadCartData(session.user.email);
+      } else {
+        setLoading(false);
+        router.push("/login?callbackUrl=/cart");
+      }
+    }
+  }, [session, sessionLoading]);
 
   const increaseQty = async (item: CartItem) => {
+    if (!session?.user?.email) return;
+
     setCartItems((prev) =>
       prev.map((i) =>
         i.bookId === item.bookId ? { ...i, quantity: i.quantity + 1 } : i,
@@ -70,15 +81,16 @@ const CartPage = () => {
         price: item.price,
         imageUrl: item.imageUrl,
         quantity: 1,
+        userEmail: session.user.email,
       });
     } catch (err) {
       console.error(err);
-      loadCartData();
+      loadCartData(session.user.email);
     }
   };
 
   const decreaseQty = async (item: CartItem) => {
-    if (item.quantity <= 1) return;
+    if (item.quantity <= 1 || !session?.user?.email) return;
 
     setCartItems((prev) =>
       prev.map((i) =>
@@ -94,10 +106,11 @@ const CartPage = () => {
         price: item.price,
         imageUrl: item.imageUrl,
         quantity: -1,
+        userEmail: session.user.email,
       });
     } catch (err) {
       console.error(err);
-      loadCartData();
+      loadCartData(session.user.email);
     }
   };
 
@@ -107,11 +120,11 @@ const CartPage = () => {
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedBookId) return;
+    if (!selectedBookId || !session?.user?.email) return;
 
     try {
       setModalLoading(true);
-      await removeFromCartDB(selectedBookId);
+      await removeFromCartDB(selectedBookId, session.user.email);
 
       setCartItems((prev) =>
         prev.filter((item) => item.bookId !== selectedBookId),
@@ -153,7 +166,7 @@ const CartPage = () => {
   const shipping = cartItems.length > 0 ? 15.0 : 0;
   const total = subtotal + shipping;
 
-  if (loading)
+  if (sessionLoading || loading)
     return (
       <div className="text-center py-20 font-bold text-stone-600">
         Loading Cart...
@@ -232,7 +245,7 @@ const CartPage = () => {
                         disabled={item.quantity <= 1}
                         className={`p-2 hover:bg-stone-100 text-stone-600 transition-colors ${item.quantity <= 1 ? "opacity-30 cursor-not-allowed" : ""}`}
                       >
-                        <FiMinus size={12} />
+                        <FiMinusIcon size={12} />
                       </button>
                       <span className="w-8 text-center text-xs font-black text-stone-800">
                         {item.quantity}
@@ -241,7 +254,7 @@ const CartPage = () => {
                         onClick={() => increaseQty(item)}
                         className="p-2 hover:bg-stone-100 text-stone-600 transition-colors"
                       >
-                        <FiPlus size={12} />
+                        <FiPlusIcon size={12} />
                       </button>
                     </div>
 
