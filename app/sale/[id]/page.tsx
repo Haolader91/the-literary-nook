@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { IoCartOutline, IoArrowBackOutline } from "react-icons/io5";
+import { IoArrowBackOutline } from "react-icons/io5";
 import { FiHeart, FiShare2, FiCheckCircle } from "react-icons/fi";
 import { getAllBooks } from "@/app/lib/getpost/books";
 import AddToCartButton from "@/app/components/AddToCartButton";
@@ -55,7 +55,7 @@ const BookDetailsPage = () => {
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="w-24 h-8 bg-stone-200 rounded-lg"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="w-full h-[500px] bg-stone-200 rounded-3xl"></div>
+            <div className="w-full h-125 bg-stone-200 rounded-3xl"></div>
             <div className="space-y-6">
               <div className="h-4 bg-stone-200 rounded w-1/4"></div>
               <div className="h-8 bg-stone-200 rounded w-3/4"></div>
@@ -176,9 +176,6 @@ const BookDetailsPage = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              {/* <button className="flex-1 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-wider py-3.5 bg-[#2ec458] text-white hover:bg-[#27b04e] active:scale-98 transition-all rounded-xl shadow-lg shadow-emerald-600/10">
-                <IoCartOutline size={20} /> Add to Shopping Cart
-              </button> */}
               <AddToCartButton book={book} buttonText="Add to Shopping Cart" />
 
               <div className="flex gap-2">

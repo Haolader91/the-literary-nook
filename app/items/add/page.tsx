@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "../../lib/auth-client";
 import { GiBookshelf } from "react-icons/gi";
 import { addedBook } from "@/app/lib/actions/books";
+import { toast } from "react-toastify";
 
 const AddBookPage = () => {
   const { data: session, isPending } = useSession();
@@ -12,7 +13,7 @@ const AddBookPage = () => {
 
   const [formData, setFormData] = useState({
     title: "",
-    author: "", // 👈 Author স্টেট যুক্ত করা হয়েছে
+    author: "",
     shortDescription: "",
     fullDescription: "",
     price: "",
@@ -21,7 +22,6 @@ const AddBookPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -41,7 +41,6 @@ const AddBookPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ type: "", text: "" });
 
     try {
       const finalBookData = {
@@ -52,14 +51,11 @@ const AddBookPage = () => {
       const result = await addedBook(finalBookData);
 
       if (result.insertedId) {
-        setMessage({
-          type: "success",
-          text: "Book added successfully to The Literary Nook!",
-        });
+        toast.success("Book added successfully to The Literary Nook!");
 
         setFormData({
           title: "",
-          author: "", // 👈 রিসেট ফর্মেও যুক্ত করা হয়েছে
+          author: "",
           shortDescription: "",
           fullDescription: "",
           price: "",
@@ -68,10 +64,8 @@ const AddBookPage = () => {
         });
       }
     } catch (error) {
-      setMessage({
-        type: "error",
-        text: "Something went wrong. Please try again.",
-      });
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -105,17 +99,7 @@ const AddBookPage = () => {
           </p>
         </div>
 
-        {message.text && (
-          <div
-            className={`mb-6 p-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center border ${
-              message.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                : "bg-red-50 border-red-200 text-red-700"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+        {/* 💡 এখান থেকে পুরনো কাস্টম অ্যালার্ট মেসেজের ডোম (DOM) ব্লকটি পুরোপুরি ডিলিট করে দিয়েছি, কারণ এখন টোস্ট দেখাবে */}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Book Title */}
@@ -134,7 +118,7 @@ const AddBookPage = () => {
             />
           </div>
 
-          {/* ✍️ Author Input Option */}
+          {/* Author Name */}
           <div className="space-y-1">
             <label className="text-xs font-black uppercase tracking-wider text-stone-500">
               Author Name

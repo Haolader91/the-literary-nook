@@ -3,6 +3,7 @@
 import React from "react";
 import { IoCartOutline } from "react-icons/io5";
 import { addToCartDB } from "../lib/actions/books";
+import { toast } from "react-toastify";
 
 interface AddToCartButtonProps {
   book: {
@@ -29,7 +30,7 @@ export default function AddToCartButton({
         imageUrl: book.imageUrl,
         quantity: 1,
       });
-      alert("added to cart page");
+      toast.success("added to cart page");
     } catch (err) {
       console.error("Error adding to cart:", err);
     }
